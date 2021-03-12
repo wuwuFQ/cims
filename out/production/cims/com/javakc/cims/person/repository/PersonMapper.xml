@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="person">
+
+    <cache type="com.javakc.cims.util.cache.MybatisCache"/>
+
+    <sql id="all">
+        id, name, card, state, grade, start, heating, property, reason
+    </sql>
+
+    <select id="queryAll" resultType="Person">
+        select <include refid="all"/> from cims_person
+    </select>
+
+    <select id="queryById" parameterType="int" resultType="Person">
+        select <include refid="all"/> from cims_person where id = #{id}
+    </select>
+
+    <select id="queryByPage" parameterType="Map" resultType="Person">
+        select <include refid="all"/> from cims_person
+            <where>
+                <if test="null != name and '' != name">
+                    name like concat('%', #{name}, '%')
+                </if>
+                <if test="null != state and (state == 1 or state == 2)">
+                    and state = #{state}
+                </if>
+            </where>
+                limit #{offset}, #{size}
+    </select>
+
+    <select id="queryByCount" parameterType="Map" resultType="Long">
+        select count(1) from cims_person
+            <where>
+                <if test="null != name and '' != name">
+                    name like concat('%', #{name}, '%')
+                </if>
+                <if test="null != state and (state == 1 or state == 2)">
+                    and state = #{state}
+                </if>
+            </where>
+    </select>
+
+    <insert id="insert" parameterType="Person" useGeneratedKeys="true" keyProperty="id">
+        insert into cims_person(name, card, state, grade, start, heating, property, reason)
+            values(#{name}, #{card}, #{state}, #{grade}, #{start}, #{heating}, #{property}, #{reason})
+    </insert>
+
+    <update id="update" parameterType="Person">
+        update cims_person set name = #{name}, card = #{card}, state = #{state}, grade = #{grade}, start = #{start}, heating = #{heating},
+            property = #{property}, reason = #{reason} where id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        delete from cims_person where id = #{id}
+    </delete>
+
+    <!-- delete from cims_person where id in(1, 2, 3, 4) -->
+    <!-- delete from cims_person where id = 1 or id = 2 or id = 3 -->
+
+    <!--
+        delete from cims_person where id in (1, 2, 3,)
+    -->
+    <delete id="batch" parameterType="int">
+        delete from cims_person where id in
+            <foreach collection="array" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+    </delete>
+
+    <select id="queryByCard" parameterType="String" resultType="int">
+        select count(1) from cims_person where card = #{card}
+    </select>
+
+
+
+
+
+
+
+    <select id="queryByCondition" resultType="Person">
+        select <include refid="all"/> from cims_person
+            <trim prefix="where" prefixOverrides="or|and">
+                <choose>
+                    <when test="null != name and '' != name">
+                        and name like concat('%', #{name})
+                    </when>
+                </choose>
+            </trim>
+    </select>
+
+    <update id="updatePerson">
+        update cims_person
+            <set>
+                <if test="null != name and '' != name">
+                    name = #{name},
+                </if>
+                <if test="null != card and '' != card">
+                    card = #{card},
+                </if>
+            </set>
+            where id = #{id}
+    </update>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</mapper>

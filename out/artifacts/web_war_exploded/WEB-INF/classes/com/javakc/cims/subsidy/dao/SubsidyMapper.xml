@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="subsidy">
+
+    <!-- 自定义封装 -->
+    <resultMap id="subsidyMap" type="Subsidy">
+        <id property="id" column="id"/>
+        <result property="month" column="month"/>
+        <result property="money" column="money"/>
+        <association property="person" javaType="Person">
+            <id property="id" column="pid"/>
+            <result property="name" column="name"/>
+            <result property="card" column="card"/>
+            <result property="grade" column="grade"/>
+        </association>
+    </resultMap>
+
+    <select id="queryByPage" parameterType="Map" resultMap="subsidyMap">
+        select s.id, s.month, s.money, p.id as pid, p.name, p.card, p.grade from cims_subsidy s
+            left join cims_person p on s.person_id = p.id where s.type = #{type}
+    </select>
+
+    <select id="querySubsidyPerson" parameterType="Map" resultType="Map">
+        select id, name, card, state from cims_person where
+            <if test="type == 1">
+                heating = 1
+            </if>
+            <if test="type == 2">
+                property = 1
+            </if>
+            and id not in (select person_id from cims_subsidy where year(month) = year(now()) and month(month) = month(now()) and type = #{type})
+    </select>
+
+</mapper>
